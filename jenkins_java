@@ -9,7 +9,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 // Clone your GitHub repo
-                git branch: 'master', url: 'https://github.com/joshua-mnz/College'
+                git branch: 'main', url: 'https://github.com/joshua-mnz/College'
             }
         }
 
