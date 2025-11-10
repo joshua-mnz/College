@@ -2,13 +2,13 @@ pipeline {
     agent any
 
     tools {
-        jdk 'jdk21'   // Must match the name configured in Jenkins
+        jdk 'jdk21'    
     }
 
     stages {
         stage('Checkout') {
             steps {
-                // Clone your GitHub repo
+               
                 git branch: 'main', url: 'https://github.com/joshua-mnz/College'
             }
         }
@@ -20,10 +20,20 @@ pipeline {
             }
         }
 
-        stage('Run') {
+        stage('Run Java') { // Renamed for clarity
             steps {
                 echo 'Running Java program...'
                 sh 'java Demo'
+            }
+        }
+
+        
+        stage('Run Python') {
+            steps {
+                echo 'Running Python script...'
+               
+                sh 'python3 script.py'
+               
             }
         }
     }
