@@ -29,7 +29,7 @@ pipeline {
                 sh 'hello.py'
             }
     }
-
+}
     post {
         success {
             echo 'Build and execution successful!'
