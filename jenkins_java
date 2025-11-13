@@ -32,7 +32,7 @@ pipeline {
             steps {
                 echo 'Running Python script...'
                
-                sh 'python3 script.py'
+                sh 'python3 hello.py'
                
             }
         }
