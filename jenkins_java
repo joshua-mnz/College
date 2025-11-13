@@ -16,10 +16,16 @@ pipeline {
             }
         }
 
-        stage('Run Java') { // Renamed for clarity
+        stage('Run Java') { 
             steps {
                 echo 'Running Java program...'
                 sh 'java Demo'
+            }
+        }
+ stage('Run Python') { 
+            steps {
+                echo 'Running Python program...'
+                sh 'python3 hello.py'
             }
         }
 }
