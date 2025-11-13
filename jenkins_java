@@ -26,7 +26,7 @@ pipeline {
         stage('Run Pyth'){
             steps{
                 echo 'Running Python..'
-                sh 'hello.py'
+                sh 'python3 hello.py'
             }
     }
 }
