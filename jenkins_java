@@ -22,13 +22,6 @@ pipeline {
                 sh 'java Demo'
             }
         }
-
-        stage('Run Pyth'){
-            steps{
-                echo 'Running Python..'
-                sh 'python3 hello.py'
-            }
-    }
 }
     post {
         success {
