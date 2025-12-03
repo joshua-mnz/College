@@ -1,0 +1,272 @@
+# Docker CRUD Application with Node.js, MongoDB, and Apache Frontend
+
+## Project Structure
+
+```
+Docker_CRUD
+├── docker-compose.yml
+├── server
+│   ├── Dockerfile
+│   ├── package.json
+│   └── server.js
+└── frontend
+    ├── Dockerfile
+    └── index.html
+```
+
+## Files and Content
+
+### 1. Create the Folder Structure
+
+```bash
+mkdir Docker_CRUD
+cd Docker_CRUD
+mkdir server frontend
+touch docker-compose.yml
+cd server
+touch Dockerfile package.json server.js
+cd ../frontend
+touch Dockerfile index.html
+cd ..
+```
+
+### 2. File Contents
+
+**`Docker_CRUD/server/package.json`:**
+```json
+{
+  "name": "node-mongo",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.0",
+    "mongoose": "^7.0.0",
+    "cors": "^2.8.5"
+  }
+}
+```
+
+**`Docker_CRUD/server/server.js`:**
+```javascript
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+
+const app = express();
+app.use(express.json());
+app.use(cors());
+
+mongoose.connect("mongodb://mongo:27017/simpledb")
+  .then(() => console.log("MongoDB Connected!!"))
+  .catch(err => console.log(err));
+
+const UserSchema = new mongoose.Schema({
+  name: String,
+  email: String,
+});
+
+const User = mongoose.model("User", UserSchema);
+
+app.post("/users", async (req, res) => {
+  try {
+    const user = await User.create(req.body);
+    res.json(user);
+  } catch (err) {
+    res.status(500).json(err);
+  }
+});
+
+app.get("/users", async (req, res) => {
+  const users = await User.find();
+  res.json(users);
+});
+
+app.listen(3000, () => console.log("Server running at http://localhost:3000"));
+```
+
+**`Docker_CRUD/server/Dockerfile`:**
+```dockerfile
+FROM node:alpine
+WORKDIR /app
+COPY package.json ./
+RUN npm install
+COPY . .
+EXPOSE 3000
+CMD npm start
+```
+
+**`Docker_CRUD/frontend/index.html`:**
+```html
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Apache Docker Frontend</title>
+</head>
+<body>
+    <h2>Add User</h2>
+    <input id="name" placeholder="Name">
+    <input id="email" placeholder="Email">
+    <button onclick="addUser()">Add User</button>
+
+    <h2>Users List</h2>
+    <div id="users"></div>
+
+    <script>
+      async function addUser() {
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+
+        const response = await fetch('http://localhost:3000/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email })
+        });
+
+        if (response.ok) {
+          document.getElementById('name').value = '';
+          document.getElementById('email').value = '';
+          loadUsers();
+        } else {
+          alert('Failed to add user');
+        }
+      }
+
+      async function loadUsers() {
+        const response = await fetch('http://localhost:3000/users');
+        const users = await response.json();
+
+        const usersDiv = document.getElementById('users');
+        usersDiv.innerHTML = '';
+
+        users.forEach(user => {
+          const userDiv = document.createElement('div');
+          userDiv.textContent = `Name: ${user.name}, Email: ${user.email}`;
+          usersDiv.appendChild(userDiv);
+        });
+      }
+
+      window.onload = loadUsers;
+    </script>
+</body>
+</html>
+```
+
+**`Docker_CRUD/frontend/Dockerfile`:**
+```dockerfile
+FROM httpd:alpine
+COPY index.html /usr/local/apache2/htdocs/
+```
+
+**`Docker_CRUD/docker-compose.yml`:**
+```yaml
+version: '3.8'
+
+services:
+  api:
+    build: ./server
+    container_name: node-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mongo
+    environment:
+      - MONGO_URL=mongodb://mongo:27017/simpledb
+    networks:
+      - mynet
+
+  mongo:
+    image: mongo:6
+    container_name: mongo-DB
+    volumes:
+      - mongodata:/data/db
+    ports:
+      - "30000:27017"
+    networks:
+      - mynet
+
+  frontend:
+    build: ./frontend
+    container_name: apache-frontend
+    ports:
+      - "10000:80"
+    depends_on:
+      - api
+    networks:
+      - mynet
+
+networks:
+  mynet:
+
+volumes:
+  mongodata:
+```
+
+## Key Points Explained:
+
+### Docker Compose Configuration:
+1. **Three Services**:
+   - `api`: Node.js backend server
+   - `mongo`: MongoDB database
+   - `frontend`: Apache HTTP server with HTML frontend
+
+2. **Network Configuration**:
+   - All services use the same internal network `mynet`
+   - This enables seamless communication between containers using service names as hostnames
+
+3. **Port Mappings**:
+   - Backend API: `localhost:3000` → container port `3000`
+   - Frontend: `localhost:10000` → container port `80`
+   - MongoDB: `localhost:30000` → container port `27017` (for external tools like MongoDB Compass)
+
+4. **Volume**:
+   - `mongodata`: Persistent storage for MongoDB data
+   - Data persists even if containers are removed
+
+### Application Flow:
+1. **User Access**: Browser → `http://localhost:10000`
+2. **Apache Serves**: HTML file to browser
+3. **Browser JavaScript**: Makes API calls to `http://localhost:3000/users`
+4. **Node.js Backend**: Processes requests and connects to MongoDB
+5. **MongoDB**: Stores/retrieves data in persistent volume
+
+## Running the Application:
+
+1. **Start all services**:
+```bash
+docker-compose up --build
+```
+
+2. **Access the application**:
+   - Frontend: http://localhost:10000
+   - Backend API: http://localhost:3000/users
+   - MongoDB (external): Connect via `localhost:30000`
+
+3. **Stop services**:
+```bash
+docker-compose down
+```
+
+## Testing the Application:
+
+1. Open browser to http://localhost:10000
+2. Add users using the form
+3. View the user list updates automatically
+4. Test API directly:
+   ```bash
+   # GET all users
+   curl http://localhost:3000/users
+   
+   # POST a new user
+   curl -X POST http://localhost:3000/users \
+     -H "Content-Type: application/json" \
+     -d '{"name":"John","email":"john@example.com"}'
+   ```
+
+This setup provides a complete full-stack application with:
+- Frontend: Apache HTTP server with HTML/JavaScript
+- Backend: Node.js Express API
+- Database: MongoDB with persistent storage
+- All services containerized and connected via Docker Compose
