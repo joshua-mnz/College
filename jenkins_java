@@ -13,9 +13,6 @@ pipeline {
                 sh 'javac Demo.java'
             }
         }
-
-
-
         stage('Run Java') { 
             steps {
                 echo 'Running Java program...'
