@@ -15,8 +15,6 @@ pipeline {
             }
         }
 
-
-
         stage('Run Java') { 
             steps {
                 echo 'Running Java program...'
