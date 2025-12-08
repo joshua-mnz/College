@@ -10,18 +10,7 @@ pipeline {
                 git branch: 'main', url: 'https://github.com/joshua-mnz/College'
             }
         }
-        stage('Compile') {
-            steps {
-                echo 'Compile Java program...'
-                sh 'javac Demo.java'
-            }
-        }
-        stage('Run Java') { 
-            steps {
-                echo 'Running Java program...'
-                sh 'java Demo'
-            }
-        }
+     
  stage('Run Python') { 
             steps {
                 echo 'Running Python program...'
