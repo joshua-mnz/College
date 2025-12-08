@@ -23,7 +23,7 @@ CRON ('* * * * *')
 		}
 	post{
 success{
-	echo "Succesfully Running"
+	echo "Succesfully Running..."
 	}
 failure{
 	echo "Build Failed"
